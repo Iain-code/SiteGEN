@@ -52,22 +52,58 @@ def extract_markdown_links(text):
 def split_nodes_image(old_nodes):
 
     new_nodes = []
-    pattern = r"(!\[.*?\]\(.*?\))"
-    pattern_alt = r"!\[.*?\]"
-    pattern_image = r"\(.*?\)"
-    for node in old_nodes:
-        sections = re.split(pattern, node.text)
-        for section in sections:
-            if section != pattern:
-                new_node = node.text + text_type_text
-                new_nodes.append(new_node)
-            else:
-                split_sec = section.split(f"![{pattern_alt}]({pattern_image})", 1)
-                new_section = split_sec[0] + text_type_image
-                new_nodes.append(new_section, pattern_image)
-    return new_nodes
+
+    for old_node in old_nodes:
+        if old_node.text_type != text_type_text:  # Making sure the node is not already text_type_text
+            new_nodes.append(old_node)
+            continue
+
+        new_text = old_node.text
+        images = extract_markdown_images(new_text) # provides a list of tuples with alt-text and URLs in.    
         
 
-def split_nodes_link(old_nodes):
+        if len(images) == 0:
+            new_nodes.append(old_node) # make sure that nodes with no markdown are not put through the function
+            continue
 
-    pattern = r"(\[.*?\]\(.*?\))"                      
+        for image in images:
+            sections = new_text.split(f"![{image[0]}]({image[1]})", 1)
+            if len(sections) != 2:
+                raise ValueError("Invalid markdown, image section not closed")
+            
+            if sections[0] != "":
+                new_nodes.append(TextNode(sections[0], text_type_text))
+            for alt_text, url in images: # Matches is a list of "2 item" tuples, first item is named alt_text, 2nd is url. Then to next tuple
+                new_nodes.append(TextNode(alt_text, text_type_image, url))
+            if sections[1] != "":
+                new_nodes.append(TextNode(sections[1], text_type_text))
+    return new_nodes
+
+
+def split_nodes_link(old_nodes):
+    new_nodes = []
+
+    for old_node in old_nodes:
+        if old_node.text_type != text_type_text:
+            new_nodes.append(old_node)
+            continue
+        
+        new_text = old_node.text
+        links = extract_markdown_links(new_text)
+        
+        if len(links) == 0:
+            new_nodes.append(old_node) # make sure that nodes with no markdown are not put through the function
+            continue
+    
+        for link in links:
+            sections = new_text.split(f"[{link[0]}]({link[1]})", 1)
+            if len(sections) != 2:
+                raise ValueError("Invalid markdown, image section not closed")
+
+            if sections[0] != "":
+                new_nodes.append(TextNode(sections[0], text_type_text))
+            for text, url in links:
+                new_nodes.append(TextNode(text, text_type_link, url))
+            if sections[1] != "":
+                new_nodes.append(TextNode(sections[1], text_type_text))
+    return new_nodes
