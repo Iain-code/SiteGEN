@@ -1,6 +1,8 @@
 from textnode import text_node_to_html_node
 from htmlnode import ParentNode
 from codefile import text_to_text_nodes
+import os
+
 
 def markdown_to_blocks(markdown):
     split = markdown.split("\n\n")
@@ -145,3 +147,51 @@ def markdown_to_html_node(markdown):
             parent_node.children.append(paragraph_node)
 
     return parent_node
+
+
+
+def extract_title(markdown):
+    lines = markdown.split("\n")
+
+    for line in lines:
+        line = line.strip()
+        if line == "":
+            continue
+        if line.startswith("#"):
+            heading = line.strip("# ")
+            return heading
+        else: 
+            raise Exception("No heading found")
+        
+here = os.getcwd()
+from_path = os.path.join(here, "./content/index.md")
+template_path = os.path.join(here, "./template.html")
+dest_path = os.path.join(here, "./public/index.html")
+print(from_path)
+print(template_path)
+print(dest_path)
+
+def generate_page(from_path, template_path, dest_path):
+  
+    print(f"Generating page from {from_path} to {dest_path} using {template_path}")
+    
+    with open(from_path, 'f') as file:
+        content_f = file.read()
+    with open(template_path, 't') as file:
+        template = file.read()
+    
+    new_content = markdown_to_html_node(content_f)
+    content = new_content.to_html()
+    title = extract_title(content_f)
+
+    replaced = template.replace("{{ Title }}", title).replace("{{ Content }}", content)
+    os.makedirs(os.path.dirname(dest_path), exist_ok=True)
+    with open(dest_path, 'w') as file:
+        file.write(replaced)
+
+    
+    
+
+
+    
+    

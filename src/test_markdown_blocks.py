@@ -1,5 +1,5 @@
 import unittest
-from markdown_blocks import block_to_block_type, markdown_to_blocks, markdown_to_html_node
+from markdown_blocks import block_to_block_type, markdown_to_blocks, markdown_to_html_node, extract_title
 
 class TestMarkdownToHTML(unittest.TestCase):
     def test_markdown_to_blocks(self):
@@ -143,6 +143,23 @@ Last thing```"""
         html = new_node.to_html()
         text = """<div><h1>Heading</h1><blockquote>This is going to be a little</blockquote><ol><li>To be</li><li>a little</li></ol><ul><li>Hope</li><li>Pray</li></ul><pre><code>Some code</code></pre></div>"""
         self.assertEqual(html, text)
+
+    def test_extract_title(self):
+
+        node = "# Piggy wiggy"
+        new_node = extract_title(node)
+        self.assertEqual(new_node, "Piggy wiggy")
+
+    def test_extract_title_again(self):
+
+        node = """
+# This better come out good
+
+> or shit will hit
+> the fan...
+"""
+        new_node = extract_title(node)
+        self.assertEqual(new_node, "This better come out good")
 
 
 if __name__ == '__main__':
