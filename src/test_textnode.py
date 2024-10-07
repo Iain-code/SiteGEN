@@ -1,7 +1,5 @@
 import unittest
 
-import unittest
-
 from textnode import (
     TextNode,
     text_type_text,
@@ -12,7 +10,6 @@ from textnode import (
     text_type_link,
     text_node_to_html_node,
 )
-
 
 class TestTextNode(unittest.TestCase):
     def test_eq(self):
@@ -32,16 +29,15 @@ class TestTextNode(unittest.TestCase):
 
     def test_eq_url(self):
         node = TextNode("This is a text node", text_type_italic, "https://www.boot.dev")
-        node2 = TextNode(
-            "This is a text node", text_type_italic, "https://www.boot.dev"
-        )
+        node2 = TextNode("This is a text node", text_type_italic, "https://www.boot.dev")
         self.assertEqual(node, node2)
 
     def test_repr(self):
         node = TextNode("This is a text node", text_type_text, "https://www.boot.dev")
-        self.assertEqual(
-            "TextNode(This is a text node, text, https://www.boot.dev)", repr(node)
-        )
+        self.assertEqual("TextNode(This is a text node, text, https://www.boot.dev)", repr(node))
+    
+
+
 class TestTextNodeToHTMLNode(unittest.TestCase):
 
     def test_text(self):
@@ -49,8 +45,12 @@ class TestTextNodeToHTMLNode(unittest.TestCase):
         html_node = text_node_to_html_node(node)
         self.assertEqual(html_node.tag, None)
         self.assertEqual(html_node.value, "This is a text node")
-
-
+    
+    def test_italic(self):
+        node = TextNode("This is an *italic*", text_type_italic)
+        html_node = text_node_to_html_node(node)
+        self.assertEqual(html_node.tag, "i")
+        self.assertEqual(html_node.value, "This is an *italic*")
 
 if __name__ == "__main__":
     unittest.main()

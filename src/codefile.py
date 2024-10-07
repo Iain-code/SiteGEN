@@ -1,6 +1,4 @@
 import re
-from htmlnode import HTMLNode
-from textnode import TextNode
 from textnode import (
     TextNode,
     text_type_text,
@@ -9,7 +7,8 @@ from textnode import (
     text_type_code,
     text_type_image,
     text_type_link,
-)
+    )
+
 
 def split_nodes_delimiter(old_nodes, delimiter, text_type):
     new_nodes = []
@@ -107,3 +106,15 @@ def split_nodes_link(old_nodes):
             if sections[1] != "":
                 new_nodes.append(TextNode(sections[1], text_type_text))
     return new_nodes
+
+def text_to_text_nodes(text):
+    nodes = [TextNode(text, text_type_text)]   # This is the output, will give a list of all of the respective nodes
+    nodes = split_nodes_delimiter(nodes, "**", text_type_bold)
+    nodes = split_nodes_delimiter(nodes, "*", text_type_italic)
+    nodes = split_nodes_delimiter(nodes, "`", text_type_code)
+    nodes = split_nodes_image(nodes)
+    nodes = split_nodes_link(nodes)
+    return nodes
+        
+   
+
