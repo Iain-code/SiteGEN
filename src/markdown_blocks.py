@@ -2,14 +2,12 @@ from textnode import text_node_to_html_node
 from htmlnode import ParentNode
 from codefile import text_to_text_nodes
 import os
-
+from pathlib import Path
 
 def markdown_to_blocks(markdown):
     split = markdown.split("\n\n")
     items = []
     for item in split:
-        if item == "":
-            continue
         item = item.strip()
         items.append(item)
     return items
@@ -22,7 +20,7 @@ def block_to_block_type(markdown_text):
             return "Heading"
     if all(line.startswith(">") for line in split):
         return "quote"
-    if all(line.startswith(("*", "-")) for line in split):
+    if all(line.startswith(("* ", "- ")) for line in split):
         return "unordered list"
             
     if markdown_text.startswith("1. "):
@@ -98,7 +96,7 @@ def markdown_to_html_node(markdown):
             lines = block.split("\n")   # Text string comes in and is split into list of elements at the line break
             li_nodes = [] 
             for line in lines:
-                if line.startswith("*") or line.startswith("-"): # for each line check if it starts with * or -
+                if line.startswith("* ") or line.startswith("- "): # for each line check if it starts with * or -
                     content = line[2:].strip()      # strip away unwanted characters and start text and first normal char
                     nodes = text_to_text_nodes(content) # gives back a list of TextNodes from the string(content)
     
@@ -136,9 +134,9 @@ def markdown_to_html_node(markdown):
         if block_type == "paragraph":
             nodes = []
             lines = block.split("\n")
-            joined = " ".join(lines)
+            paragraph = " ".join(lines)
 
-            text_nodes = text_to_text_nodes(joined)
+            text_nodes = text_to_text_nodes(paragraph)
             for node in text_nodes:
                 html_node = text_node_to_html_node(node)
                 nodes.append(html_node)
@@ -162,36 +160,86 @@ def extract_title(markdown):
             return heading
         else: 
             raise Exception("No heading found")
-        
-here = os.getcwd()
-from_path = os.path.join(here, "./content/index.md")
-template_path = os.path.join(here, "./template.html")
-dest_path = os.path.join(here, "./public/index.html")
-print(from_path)
-print(template_path)
-print(dest_path)
 
 def generate_page(from_path, template_path, dest_path):
-  
-    print(f"Generating page from {from_path} to {dest_path} using {template_path}")
+
+    print(f"gen_page from path: {from_path}")
+    print(f"gen_page template path: {template_path}")
+    print(f"gen_page destination path: {dest_path}")
+
+    print(f"Generating page FROM PATH: {from_path}\nDESTINATION PATH: {dest_path}\nTEMPLATE PATH: {template_path}")
     
-    with open(from_path, 'f') as file:
+    with open(from_path, 'r') as file:
         content_f = file.read()
-    with open(template_path, 't') as file:
+    with open(template_path, 'r') as file:
         template = file.read()
     
+    print("read files")
+
     new_content = markdown_to_html_node(content_f)
+    print("content_f through markdown to html node")
+
     content = new_content.to_html()
     title = extract_title(content_f)
 
     replaced = template.replace("{{ Title }}", title).replace("{{ Content }}", content)
+    print("title and content replaced")
+
     os.makedirs(os.path.dirname(dest_path), exist_ok=True)
+    print("new destination path created")
+
     with open(dest_path, 'w') as file:
         file.write(replaced)
+    print("file written to dest_path")
+    print(f"FINISHED GENERATING PAGE")
 
-    
-    
 
+def generate_pages_recursive(content_path, template_path, public_path):
 
+    public_path = Path(public_path)
+    here = os.getcwd()
+    template_path = os.path.join(here, "./template.html")
+
+    if not os.path.exists(content_path):
+        print(f"Directory does not exist: {content_path}")
+        return
     
+    items = os.listdir(content_path) # make a list of every file/dir in content
     
+    if items:
+        for item in items:
+            item_path = Path(content_path) / item
+
+            source = Path(content_path)
+            print(f"source: {source}")
+            destination = Path(public_path)
+            print(f"destination: {destination}")
+
+            if os.path.isdir(item_path):
+            
+                print("Directory found")
+                print(f"item path = {item_path}")
+            
+                new_content_path = source / item_path.name
+                print(f"NEW CONTENT PATH: {new_content_path}")
+                new_dest_path = destination / new_content_path.name
+                print(f"new dest path: {new_dest_path}")
+                os.mkdir(new_dest_path) # make a new DIRECTORY in the destination
+                
+                generate_pages_recursive(new_content_path, template_path, new_dest_path) # call the function again on the NESTED dir
+                
+            else: 
+        
+                if os.path.exists(content_path) and item.endswith(".md"):
+                    print(".md file found")
+                    print(f"item path: {item_path}")
+                    print(f"PUBLIC PATH = {public_path}")
+                    # Define the path to the directory and the new file
+
+                    new_file_path = public_path / "index.html"
+                    print(f"new file path: {new_file_path}")
+                    # To create an empty file, or ensure a file exists
+                    new_file_path.touch()
+                    generate_page(item_path, template_path, new_file_path)
+                
+                

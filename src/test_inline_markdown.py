@@ -19,13 +19,26 @@ from textnode import (
 
 class TestInlineMarkdown(unittest.TestCase):
     def test_nodes_bold(self):
-        node = TextNode("This is text with a **bolded** word", text_type_text)
+        node = TextNode("**This** is text with a **bolded** word.", text_type_text)
         new_nodes = split_nodes_delimiter([node], "**", text_type_bold)
 
         self.assertListEqual([
-                TextNode("This is text with a ", text_type_text),
+                TextNode("This", text_type_bold),
+                TextNode(" is text with a ", text_type_text),
                 TextNode("bolded", text_type_bold),
-                TextNode(" word", text_type_text)], new_nodes)
+                TextNode(" word.", text_type_text)], new_nodes)
+        
+        node = TextNode("**bold** word here", text_type_text)
+        new_nodes = split_nodes_delimiter([node], "**", text_type_bold)
+        self.assertEqual([
+                TextNode("bold", text_type_bold),
+                TextNode(" word here", text_type_text)], new_nodes)
+        
+        node = TextNode("this word in **bold**", text_type_text)
+        new_nodes = split_nodes_delimiter([node], "**", text_type_bold)
+        self.assertEqual([
+                TextNode("this word in ", text_type_text),
+                TextNode("bold", text_type_bold)], new_nodes)
     
     def test_nodes_italic(self):
         node = TextNode("This is text with an *italic* word", text_type_text)

@@ -1,5 +1,5 @@
 import unittest
-from markdown_blocks import block_to_block_type, markdown_to_blocks, markdown_to_html_node, extract_title
+from markdown_blocks import block_to_block_type, markdown_to_blocks, markdown_to_html_node, extract_title, generate_page
 
 class TestMarkdownToHTML(unittest.TestCase):
     def test_markdown_to_blocks(self):
@@ -160,7 +160,6 @@ Last thing```"""
 """
         new_node = extract_title(node)
         self.assertEqual(new_node, "This better come out good")
-
 
 if __name__ == '__main__':
     unittest.main()
