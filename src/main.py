@@ -13,12 +13,12 @@ def main():
     
 def cleaning_directory(destination):
 
-    now = os.getcwd()               # this is finding the current working directory (CWD)
-    source = os.path.join(now, "static")        # This is making source directory by joining now and static folder.
-    destination = os.path.join(now, "public")   # same as static
+    cwd = os.getcwd()               # this is finding the current working directory (CWD)
+    source = os.path.join(cwd, "static")        # This is making source directory by joining cwd and static folder.
+    destination = os.path.join(cwd, "public")   # same as static
 
 
-    for item in os.listdir(destination):    # makes a list of the public folder files / dir
+    for item in os.listdir(destination):    # makes a list of the names of public folder files / dir
         if not os.listdir(destination):
             raise Exception("No directory")
 
